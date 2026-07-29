@@ -1,0 +1,147 @@
+/* General navbar styles */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: #8A0302;
+  box-shadow: 0 2px 8px rgba(78, 32, 32, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Logo section */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo img {
+  height: 40px;
+  width: 40px;
+}
+
+.logo span {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+/* Navigation links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav-links li a:hover {
+  color: white;
+}
+
+/* Right controls section: profile or login */
+.right-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Login button */
+.login-btn {
+  padding: 8px 16px;
+  background-color: white;
+  color: #8A0302;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* Profile section */
+.profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  height: 36px;
+  width: 36px;
+  background-color: white;
+  color: #8A0302;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Dropdown menu */
+.dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 100;
+}
+
+.dropdown div {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.dropdown div:hover {
+  background-color: #f0f0f0;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 12px;
+    font-size: 0.9rem;
+  }
+
+  .logo span {
+    font-size: 1.2rem;
+  }
+
+  .login-btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}

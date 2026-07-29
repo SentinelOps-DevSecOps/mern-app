@@ -1,0 +1,220 @@
+.auth_main {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;  /* Stretch children to equal height */
+  gap: 2rem;
+  padding: 4rem 2rem;
+  min-height: 100vh;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.auth_left,
+.auth_right {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  height: auto;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* Fixed content inside auth_left */
+.auth_left_content {
+  text-align: center;
+  max-width: 90%;
+  color: #1f2937;
+  font-size: 1.1rem;
+}
+
+/* Card inside auth_right */
+.auth_right .auth_card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: none; /* shadow handled by auth_right */
+  background-color: #ffffff;
+}
+
+/* Container and form elements */
+.auth_container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.auth_header {
+  text-align: center;
+}
+
+.auth_heading {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-top: 0.4rem;
+  color: #1f2937;
+}
+
+.auth_title {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.auth_item label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  display: block;
+  color: #374151;
+}
+
+.auth_action {
+  margin-top: 1rem;
+}
+
+.auth_options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+.auth_link {
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth_link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 768px) {
+  .auth_main {
+    flex-direction: column;
+    padding: 2rem 1rem;
+    min-height: auto;
+  }
+
+  .auth_left,
+  .auth_right {
+    max-height: none;
+    width: 100%;
+    min-width: auto;
+    margin-bottom: 2rem;
+  }
+
+  .auth_right .auth_card {
+    max-width: 100%;
+  }
+}
+
+
+.home_intro_section {
+    padding: 3rem 2rem;
+    background-color: #fefefe; /* light background */
+  }
+
+  .blood_banner {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .blood_image {
+    width: 150px;
+    height: auto;
+    margin-bottom: 1rem;
+  }
+
+  .animated_sentence {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #b91c1c;
+    margin-bottom: 1rem;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .blood_banner_description {
+    font-size: 1rem;
+    color: #374151;
+    line-height: 1.6;
+  }
+
+  .description_b {
+    color: #dc2626;
+  }
+
+
+
+  .otp_input_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.otp_input {
+  text-align: center;
+  font-weight: 500;
+}
+
+.timer_container {
+  color: #8A0302;
+  font-size: 14px;
+  padding: 1rem 0;
+}
+
+
+/* Animations */
+@keyframes fadeText {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.auth_inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}

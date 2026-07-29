@@ -1,0 +1,119 @@
+/* Form Container */
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 1rem;
+  border: 2px solid #8A0302;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.form-container:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+/* Form Title */
+.form-title {
+  text-align: center;
+  font-size: 1.75rem;
+  color: #8A0302;
+  margin-bottom: 1.5rem;
+}
+
+/* Labels */
+.form-label {
+  display: block;
+  margin: 0.75rem 0 0.5rem;
+  color: #8A0302;
+  font-weight: 600;
+}
+
+/* Inputs and Selects */
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1.5px solid #8A0302;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: #c53030;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(138, 3, 2, 0.2);
+}
+
+/* Captcha Section */
+.captcha-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.captcha-code {
+  padding: 0.75rem 1.5rem;
+  background-color: #fef3c7;
+  border: 2px dashed #8A0302;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  letter-spacing: 4px;
+  font-size: 1.1rem;
+  color: #8A0302;
+}
+
+.refresh-button {
+  background-color: #8A0302;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.4rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.refresh-button:hover {
+  background-color: #a20a0a;
+}
+
+/* Error Message */
+.captcha-error {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Checkbox */
+.checkbox-label {
+  margin-top: 1rem;
+  display: block;
+  color: #8A0302;
+  font-size: 0.95rem;
+}
+
+/* Submit Button */
+.submit-button {
+  width: 100%;
+  padding: 0.9rem;
+  background-color: #8A0302;
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  margin-top: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #a20a0a;
+}

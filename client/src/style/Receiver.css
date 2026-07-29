@@ -1,0 +1,95 @@
+.search-form {
+  max-width: 500px;
+  margin: 0 auto;
+  margin-bottom: 30px;
+  margin-top: 10px;
+  padding: 25px;
+  background-color: #fff8f8;
+  border: 2px solid #8A0302;
+  border-radius: 10px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.search-label {
+  display: block;
+  margin: 10px 0 5px;
+  color: #8A0302;
+  font-weight: bold;
+}
+
+.search-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #8A0302;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  background-color: #fff;
+}
+
+.search-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #8A0302;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #a80707;
+}
+
+
+.search-results {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  background-color: #fff8f8;
+  padding: 20px;
+  border: 2px solid #8A0302;
+  border-radius: 10px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.donor-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.donor-table th,
+.donor-table td {
+  border: 1px solid #8A0302;
+  padding: 10px;
+  text-align: left;
+}
+
+.donor-table th {
+  background-color: #8A0302;
+  color: white;
+}
+
+.donor-table tr:nth-child(even) {
+  background-color: #f9dcdc;
+}
+
+.report-button {
+  background-color: #c70000;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.report-button:hover {
+  background-color: #a70000;
+}

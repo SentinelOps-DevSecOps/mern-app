@@ -1,0 +1,18 @@
+.ui_backToLogin{
+    background-color: #efeeee;
+    padding: 0.8rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    font-size: 14px;
+    cursor: pointer;
+    color: #8A0302;
+    transition: all;
+    font-weight: 500;
+}
+
+.ui_backToLogin:hover{
+    background-color: #efebeb;
+}

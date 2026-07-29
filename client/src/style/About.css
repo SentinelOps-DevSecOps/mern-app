@@ -1,0 +1,117 @@
+.about-section {
+  padding: 60px 20px;
+  background-color: #f4f7fa;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.8;
+}
+
+.about-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.about-title {
+  font-size: 3rem;
+  text-align: center;
+  color: #1a1a1a;
+  margin-bottom: 40px;
+}
+
+.about-intro {
+  font-size: 1.15rem;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 60px auto;
+  color: #555;
+}
+
+/* Card styling */
+.about-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 50px;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.about-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Reverse every second card for zigzag layout */
+.about-card:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+/* Shared card content styles */
+.about-text {
+  flex: 1;
+  padding: 0 30px;
+}
+
+.about-text h2 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.about-text p {
+  font-size: 1.05rem;
+  color: #333;
+  text-align: justify;
+}
+
+/* Image styling */
+.about-image {
+  width: 45%;
+  max-width: 400px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+/* Light background themes with heading color matches */
+.about-card:nth-child(3n + 1) {
+  background-color: #e3f2fd;
+}
+
+.about-card:nth-child(3n + 1) .about-text h2 {
+  color: #1976d2;
+}
+
+.about-card:nth-child(3n + 2) {
+  background-color: #e8f5e9;
+}
+
+.about-card:nth-child(3n + 2) .about-text h2 {
+  color: #388e3c;
+}
+
+.about-card:nth-child(3n) {
+  background-color: #fff3e0;
+}
+
+.about-card:nth-child(3n) .about-text h2 {
+  color: #f57c00;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .about-card {
+    flex-direction: column !important;
+    text-align: center;
+  }
+
+  .about-text {
+    padding: 20px 0;
+  }
+
+  .about-image {
+    width: 100%;
+    max-width: 90%;
+    margin-bottom: 20px;
+  }
+}
