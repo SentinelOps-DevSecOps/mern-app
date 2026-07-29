@@ -16,7 +16,7 @@ const AboutUs = () => {
         <div className="about-content">
           <h1 className="about-title">About HopeGivers</h1>
           <p className="about-intro">
-            HopeGivers is not just a digital platform—it's a compassionate
+            HopeGivers is not just a digital platform—it&apos;s a compassionate
             movement dedicated to saving lives through efficient, transparent,
             and community-focused blood donation. Founded on the belief that no
             one should suffer or die due to the unavailability of blood,
@@ -40,7 +40,7 @@ const AboutUs = () => {
                 should help. Our vision is to create a seamless, real-time blood
                 donation network that connects people instantly, regardless of
                 geography. Through innovation and dedication, we aim to make
-                life-saving blood available when and where it's needed most.
+                life-saving blood available when and where it&apos;s needed most.
                 HopeGivers envisions a world where technology enables
                 empathy—where a request for blood can be fulfilled within
                 minutes, thanks to a well-connected network of verified donors
@@ -107,7 +107,7 @@ const AboutUs = () => {
                 heroes, and encourage continuous learning and involvement.
                 Beyond just technical functionality, HopeGivers provides a sense
                 of belonging. Being part of this community means you are never
-                alone in your efforts. Whether you're responding to a call for
+                alone in your efforts. Whether you&apos;re responding to a call for
                 help or simply sharing encouragement, every action contributes
                 to a culture of giving and humanity. HopeGivers is proud to
                 build bridges between people from different walks of life,

@@ -20,33 +20,35 @@ import Footer from './components/navbar/Footer';
 
 const App = () => {
   return (
-    <Routes>
-      {/* 🔁 Redirect base path to login */}
-      <Route path="/" element={<Navigate to="/login" />} />
+    <>
+      <Routes>
+        {/* 🔁 Redirect base path to login */}
+        <Route path="/" element={<Navigate to="/login" />} />
 
-      {/* 🔐 Public Routes */}
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/forget/password" element={<ForgetPassword />} />
+        {/* 🔐 Public Routes */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forget/password" element={<ForgetPassword />} />
 
-      {/* 🔒 Special Protected OTP Routes (passToken based) */}
-      <Route element={<Super />}>
-        <Route path="/otp/verify" element={<VerifyOtp />} />
-        <Route path="/password/update" element={<UpdatePassword />} />
-      </Route>
+        {/* 🔒 Special Protected OTP Routes (passToken based) */}
+        <Route element={<Super />}>
+          <Route path="/otp/verify" element={<VerifyOtp />} />
+          <Route path="/password/update" element={<UpdatePassword />} />
+        </Route>
 
-      {/* 🔒 Authenticated User Routes (token based) */}
-      <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
-      <Route path="/donor/register" element={<PrivateRoute><RegistrationForm /></PrivateRoute>} />
+        {/* 🔒 Authenticated User Routes (token based) */}
+        <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
+        <Route path="/donor/register" element={<PrivateRoute><RegistrationForm /></PrivateRoute>} />
 
-      {/* 🧾 Open Pages (optional: make them PrivateRoute too if needed) */}
-      <Route path="/donor/search-donors" element={<ReceiverForm />} />
-      <Route path="/feedback/form" element={<PrivateRoute><Feedback /></PrivateRoute>} />
-      <Route path="/contactus" element={<PrivateRoute><ContactUs /></PrivateRoute>} />
-      <Route path="/aboutus" element={<AboutUs />} />
-    </Routes>
+        {/* 🧾 Open Pages (optional: make them PrivateRoute too if needed) */}
+        <Route path="/donor/search-donors" element={<ReceiverForm />} />
+        <Route path="/feedback/form" element={<PrivateRoute><Feedback /></PrivateRoute>} />
+        <Route path="/contactus" element={<PrivateRoute><ContactUs /></PrivateRoute>} />
+        <Route path="/aboutus" element={<AboutUs />} />
+      </Routes>
+      <Footer />
+    </>
   );
-  <Footer />;
 };
 
 export default App;

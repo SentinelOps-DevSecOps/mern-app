@@ -35,6 +35,7 @@ const ChatBot = () => {
         setMessages((prev) => [...prev, { sender: 'bot', text: 'Bot error: ' + data.error }]);
       }
     } catch (err) {
+      console.error(err);
       setMessages((prev) => [...prev, { sender: 'bot', text: 'Network error.' }]);
     }
   };
