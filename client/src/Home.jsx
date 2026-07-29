@@ -51,7 +51,7 @@ export default function Home() {
             transparent and real-time system. We handle everything—from smart
             donor-recipient matching and secure data handling to educating our
             community on the importance of donation. By donating blood through
-            HopeGivers, you're not just giving blood—you're giving hope,
+            HopeGivers, you&apos;re not just giving blood—you&apos;re giving hope,
             strength, and a second chance at life.
           </p>
           <Link to="/donor/register">
