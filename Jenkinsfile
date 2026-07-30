@@ -98,7 +98,7 @@ pipeline {
                     docker build \
                         --tag ${BACKEND_IMAGE}:${IMAGE_TAG} \
                         --tag ${BACKEND_IMAGE}:latest \
-                        --file backend/Dockerfile \
+                        --file server/Dockerfile \
                         --label "build.number=${BUILD_NUMBER}" \
                         --label "build.url=${BUILD_URL}" \
                         --label "git.commit=$(git rev-parse HEAD)" \
@@ -112,7 +112,7 @@ pipeline {
                     docker build \
                         --tag ${FRONTEND_IMAGE}:${IMAGE_TAG} \
                         --tag ${FRONTEND_IMAGE}:latest \
-                        --file frontend/Dockerfile \
+                        --file client/Dockerfile \
                         --label "build.number=${BUILD_NUMBER}" \
                         --label "build.url=${BUILD_URL}" \
                         frontend/
