@@ -102,7 +102,7 @@ pipeline {
                         --label "build.number=${BUILD_NUMBER}" \
                         --label "build.url=${BUILD_URL}" \
                         --label "git.commit=$(git rev-parse HEAD)" \
-                        backend/
+                        server/
 
                     echo "✅ Backend image built: ${BACKEND_IMAGE}:${IMAGE_TAG}"
                     echo ""
@@ -115,7 +115,7 @@ pipeline {
                         --file client/Dockerfile \
                         --label "build.number=${BUILD_NUMBER}" \
                         --label "build.url=${BUILD_URL}" \
-                        frontend/
+                        client/
 
                     echo "✅ Frontend image built: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
                     echo ""
