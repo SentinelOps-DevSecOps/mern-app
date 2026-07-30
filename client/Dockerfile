@@ -26,6 +26,9 @@ RUN npm run build
 # ─────────────────────────────────────────────────
 FROM nginx:1.25-alpine
 
+# Upgrade base OS packages to patch vulnerabilities
+RUN apk update && apk upgrade --no-cache
+
 # Copy custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
