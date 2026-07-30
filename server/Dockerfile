@@ -22,6 +22,12 @@ RUN npm ci --omit=dev
 # ─────────────────────────────────────────────────
 FROM node:20-alpine
 
+# Upgrade base OS packages to patch OS vulnerabilities
+RUN apk update && apk upgrade --no-cache
+
+# Remove global npm (unused in production runtime) to eliminate bundled vulnerabilities
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 # Security: create a non-root user
 # Never run apps as root in containers!
 RUN addgroup -g 1001 -S appgroup && \
