@@ -107,7 +107,7 @@ pipeline {
                     echo "✅ Backend image built: ${BACKEND_IMAGE}:${IMAGE_TAG}"
                     echo ""
 
-                    # Build frontend image
+                    # Build frontend image..
                     echo "--- Building frontend image ---"
                     docker build \
                         --tag ${FRONTEND_IMAGE}:${IMAGE_TAG} \
