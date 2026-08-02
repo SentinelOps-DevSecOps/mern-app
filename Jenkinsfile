@@ -94,11 +94,17 @@ pipeline {
                 script {
                     def output = sh(
                         script: """
-                            source ${VENV_PATH}/bin/activate
+                            if [ ! -f "${VENV_PATH}/bin/activate" ]; then
+                                python3 -m venv ${VENV_PATH}
+                                . ${VENV_PATH}/bin/activate
+                                pip install --quiet mysql-connector-python colorama tabulate requests
+                            else
+                                . ${VENV_PATH}/bin/activate
+                            fi
                             python3 security/db_manager.py create-scan \
                                 --build ${BUILD_NUMBER} \
                                 --branch main \
-                                --commit \$(git rev-parse HEAD)
+                                --commit "\$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
                         """,
                         returnStdout: true
                     ).trim()
@@ -233,7 +239,7 @@ pipeline {
                 echo 'Stage 5: Python CVE Risk Scoring Engine'
                 echo '=========================================='
                 sh '''
-                    source ${VENV_PATH}/bin/activate
+                    . ${VENV_PATH}/bin/activate
 
                     echo "--- Scoring Backend Image ---"
                     python3 security/risk_scorer.py \
@@ -311,7 +317,7 @@ pipeline {
                 echo 'Stage 7: Dynamic Application Security Testing'
                 echo '=========================================='
                 sh '''
-                    source ${VENV_PATH}/bin/activate
+                    . ${VENV_PATH}/bin/activate
 
                     python3 security/zap_scanner.py \
                         --target ${TEST_APP_URL} \
@@ -407,7 +413,7 @@ pipeline {
         stage('💾 Update Scan Record') {
             steps {
                 sh '''
-                    source ${VENV_PATH}/bin/activate
+                    . ${VENV_PATH}/bin/activate
                     python3 security/db_manager.py update-scan \
                         --scan-id ${SCAN_ID} \
                         --status PASSED \
@@ -436,7 +442,7 @@ pipeline {
         failure {
             sh '''
                 # Update DB with failed status
-                source ${VENV_PATH}/bin/activate 2>/dev/null || true
+                . ${VENV_PATH}/bin/activate 2>/dev/null || true
                 python3 security/db_manager.py update-scan \
                     --scan-id ${SCAN_ID:-0} \
                     --status FAILED 2>/dev/null || true
