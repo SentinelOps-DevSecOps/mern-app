@@ -28,3 +28,7 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+#python virtual environment
+security/venv/
+
