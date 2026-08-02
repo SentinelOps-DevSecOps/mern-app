@@ -408,10 +408,7 @@ pipeline {
                 }
             }
         }
-
-    }
-
-	// ── Stage 9: Update DB Record ────────────────────────────────
+        // ── Stage 9: Update DB Record ────────────────────────────────
         stage('💾 Update Scan Record') {
             steps {
                 sh '''
@@ -425,8 +422,8 @@ pipeline {
                 '''
             }
         }
-
-   }// end stages
+    }
+   // end stages
 
     // ── Post Pipeline ─────────────────────────────────────────────────────
     // Runs after ALL stages complete
