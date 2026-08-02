@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────
+# DevSecOps Security Gate Configuration
+# Adjust thresholds here without changing code
+# ─────────────────────────────────────────────────────────────
+
+risk_scoring:
+  # Points assigned per vulnerability severity
+  weights:
+    CRITICAL: 10
+    HIGH: 5
+    MEDIUM: 2
+    LOW: 0.5
+    UNKNOWN: 0
+
+  # Pipeline BLOCKS if total score exceeds this
+  # 30 = allows some HIGH vulns but blocks CRITICAL combinations
+  block_threshold: 30
+
+  # Warn (but don't block) if score exceeds this
+  warn_threshold: 15
+
+trivy:
+  # Always block on these severities regardless of score
+  always_block_on: ['CRITICAL']
+
+  # Ignore these CVEs (known false positives)
+  # Add CVE IDs here if you've verified they don't affect you
+  ignore_cves: []
+
+zap:
+  # Block pipeline if ZAP finds findings at these risk levels
+  block_on_risk: ['High']
+
+  # Scan timeout in minutes
+  timeout_minutes: 5
+
+  # URLs to exclude from scanning (e.g., logout endpoints)
+  exclude_urls:
+    - '.*logout.*'
+    - '.*signout.*'
+
+npm_audit:
+  # Block on these severity levels
+  block_on: ['critical', 'high']
