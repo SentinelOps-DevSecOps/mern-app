@@ -1,46 +1,52 @@
 // ───────────────────────────────────────────────────────────────
 // Stages:
 //   1. Checkout       → Pull code from GitHub
-//   2. Docker Build   → Build frontend + backend images
-//   3. Trivy Scan     → Scan images for CVEs
-//   4. Push Images    → Upload to DockerHub (only if scans pass)
-// ─────────────────────────────────────────────────────────────────────────
+//   2. Initialize     → Create scan record in DB
+//   3. Docker Build   → Build frontend + backend images
+//   4. Trivy Scan     → Scan images for CVEs
+//   5. Risk Score     → Evaluate CVE risk score
+//   6. Test Env       → Deploy containers for ZAP
+//   7. ZAP DAST       → OWASP ZAP dynamic scan
+//   8. Push Images    → Upload to DockerHub (only if scans pass)
+//   9. Update Record  → Mark scan status in DB
+// ───────────────────────────────────────────────────────────────
 
 pipeline {
-
 
     // ── Environment Variables ─────────────────────────────────────────────
     environment {
         // Your DockerHub username — change this!
-        DOCKER_USERNAME    = 'abhay707'
+        DOCKER_USERNAME       = 'abhay707'
 
         // Image names on DockerHub
-        BACKEND_IMAGE      = "${DOCKER_USERNAME}/mern-backend"
-        FRONTEND_IMAGE     = "${DOCKER_USERNAME}/mern-frontend"
+        BACKEND_IMAGE         = "${DOCKER_USERNAME}/mern-backend"
+        FRONTEND_IMAGE        = "${DOCKER_USERNAME}/mern-frontend"
 
-        IMAGE_TAG          = "${BUILD_NUMBER}"
+        IMAGE_TAG             = "${BUILD_NUMBER}"
 
-       
-        TRIVY_SEVERITY     = 'CRITICAL,HIGH'
+        TRIVY_SEVERITY        = 'CRITICAL,HIGH'
 
-        DOCKER_CREDENTIALS = 'dockerhub-credentials'
+        DOCKER_CREDENTIALS    = 'dockerhub-credentials'
 
         // Report paths
         TRIVY_BACKEND_REPORT  = 'trivy-backend-report.json'
         TRIVY_FRONTEND_REPORT = 'trivy-frontend-report.json'
-	DB_HOST     = 'localhost'
-        DB_USER     = 'secuser'
-        DB_PASSWORD = 'sentinelops'
-        DB_NAME     = 'devsecops_security'
+
+        DB_HOST               = 'localhost'
+        DB_USER               = 'secuser'
+        DB_PASSWORD           = 'sentinelops'
+        DB_NAME               = 'devsecops_security'
+
         // Python venv path
-        VENV_PATH   = '/home/dev/SentinelOps/security/venv'
+        VENV_PATH             = "${WORKSPACE}/security/venv"
+
         // Test environment URL (where app runs for ZAP to scan)
-        TEST_APP_URL = 'http://localhost:3000'
+        TEST_APP_URL          = 'http://localhost:3000'
     }
 
     // ── Pipeline Options ──────────────────────────────────────────────────
     options {
-        // If pipeline runs longer than 30 minutes, abort it
+        // If pipeline runs longer than 40 minutes, abort it
         timeout(time: 40, unit: 'MINUTES')
 
         // Keep logs of last 10 builds only (saves disk space)
@@ -67,7 +73,6 @@ pipeline {
                 echo 'Stage 1: Checking out source code'
                 echo '=========================================='
 
-                
                 checkout scm
 
                 // Print what we checked out
@@ -80,7 +85,7 @@ pipeline {
             }
         }
 
-	 // ── Stage 2: Create DB Scan Record ────────────────────────────
+        // ── Stage 2: Create DB Scan Record ────────────────────────────────
         stage('📊 Initialize Scan Record') {
             steps {
                 echo 'Creating scan record in MySQL...'
@@ -105,8 +110,6 @@ pipeline {
                 }
             }
         }
-
-        
 
         // ── Stage 3: Docker Build ─────────────────────────────────────────
         stage('🐳 Docker Build') {
@@ -141,7 +144,6 @@ pipeline {
 
                     echo "✅ Frontend image built: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
                     echo ""
-
                 '''
             }
 
@@ -164,18 +166,17 @@ pipeline {
                 echo '=========================================='
 
                 sh '''
-                   
                     echo ""
                     echo "=========================================="
                     echo "Scanning BACKEND image..."
                     echo "=========================================="
 
                     # Table format for human-readable output in Jenkins log
-                 //   trivy image \
-                 //       --severity ${TRIVY_SEVERITY} \
-                 //       --format table \
-                 //       --no-progress \
-                 //       ${BACKEND_IMAGE}:${IMAGE_TAG}
+                    # trivy image \
+                    #     --severity ${TRIVY_SEVERITY} \
+                    #     --format table \
+                    #     --no-progress \
+                    #     ${BACKEND_IMAGE}:${IMAGE_TAG}
 
                     # JSON format saved as artifact
                     trivy image \
@@ -189,11 +190,11 @@ pipeline {
                     echo "Scanning FRONTEND image..."
                     echo "=========================================="
 
-                 //   trivy image \
-                 //       --severity ${TRIVY_SEVERITY} \
-                 //       --format table \
-                 //       --no-progress \
-                 //       ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                    # trivy image \
+                    #     --severity ${TRIVY_SEVERITY} \
+                    #     --format table \
+                    #     --no-progress \
+                    #     ${FRONTEND_IMAGE}:${IMAGE_TAG}
 
                     trivy image \
                         --severity ${TRIVY_SEVERITY} \
@@ -223,7 +224,7 @@ pipeline {
             }
         }
 
-// ── Stage 5: Risk Scorer ──────────────────────────────────────
+        // ── Stage 5: Risk Score Analysis ──────────────────────────────────
         stage('📈 Risk Score Analysis') {
             steps {
                 echo '=========================================='
@@ -275,8 +276,7 @@ pipeline {
             }
         }
 
-
-	// ── Stage 6: Deploy Test Environment ─────────────────────────
+        // ── Stage 6: Deploy Test Environment ──────────────────────────────
         stage('🧪 Start Test Environment') {
             steps {
                 echo 'Starting app containers for ZAP to scan...'
@@ -302,7 +302,7 @@ pipeline {
             }
         }
 
-        // ── Stage 7: OWASP ZAP DAST ──────────────────────────────────
+        // ── Stage 7: OWASP ZAP DAST ───────────────────────────────────────
         stage('🌐 OWASP ZAP DAST Scan') {
             steps {
                 echo '=========================================='
@@ -341,11 +341,9 @@ pipeline {
                 }
             }
         }
-	
 
         // ── Stage 8: Push to DockerHub ────────────────────────────────────
         stage('📤 Push to DockerHub') {
-      
             when {
                 expression {
                     currentBuild.result == null ||
@@ -358,12 +356,6 @@ pipeline {
                 echo 'Stage 8: Pushing images to DockerHub'
                 echo '=========================================='
 
-                when {
-                expression {
-                    currentBuild.result == null ||
-                    currentBuild.result == 'SUCCESS'
-                }
-            }
                 withCredentials([usernamePassword(
                     credentialsId: "${DOCKER_CREDENTIALS}",
                     usernameVariable: 'DOCKER_USER',
@@ -408,7 +400,8 @@ pipeline {
                 }
             }
         }
-        // ── Stage 9: Update DB Record ────────────────────────────────
+
+        // ── Stage 9: Update DB Record ─────────────────────────────────────
         stage('💾 Update Scan Record') {
             steps {
                 sh '''
@@ -422,8 +415,7 @@ pipeline {
                 '''
             }
         }
-    }
-   // end stages
+    } // end stages
 
     // ── Post Pipeline ─────────────────────────────────────────────────────
     // Runs after ALL stages complete
@@ -444,7 +436,7 @@ pipeline {
                 # Update DB with failed status
                 source ${VENV_PATH}/bin/activate 2>/dev/null || true
                 python3 security/db_manager.py update-scan \
-                    --scan-id ${SCAN_ID} \
+                    --scan-id ${SCAN_ID:-0} \
                     --status FAILED 2>/dev/null || true
 
                 # Clean up test environment if still running
@@ -459,5 +451,4 @@ pipeline {
             '''
         }
     }
-
 }
