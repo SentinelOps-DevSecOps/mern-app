@@ -81,7 +81,8 @@ def start_zap():
         '-port', '8090',
         '-config', 'api.disablekey=true',
         '-config', 'api.addrs.addr.name=.*',
-        '-config', 'api.addrs.addr.regex=true'
+        '-config', 'api.addrs.addr.regex=true',
+        '-config', 'autoupdate.checkonstart=false'
     ]
 
     # Start ZAP as background process
@@ -95,7 +96,7 @@ def start_zap():
     print(f"   Waiting for ZAP to initialize...")
 
     # Wait for ZAP API to become available
-    max_wait = 60  # seconds
+    max_wait = 120  # seconds
     waited   = 0
     while waited < max_wait:
         try:
