@@ -1,4 +1,3 @@
-```bash
 #!/bin/bash
 
 set -e
@@ -74,5 +73,4 @@ echo
 echo "========================================="
 echo " OWASP ZAP Installation Completed"
 echo "========================================="
-```
 
