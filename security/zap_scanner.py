@@ -56,13 +56,26 @@ def zap_api(endpoint, params=None):
         print(f"{Fore.RED}❌ ZAP API error: {e}")
         return {}
 
+import shutil
+
 # ── Start ZAP daemon ──────────────────────────────────────────────────────────
+def find_zap_executable():
+    """Locate zap.sh binary on system."""
+    path = shutil.which('zap.sh')
+    if path:
+        return path
+    for common_path in ['/usr/local/bin/zap.sh', '/opt/zap/zap.sh', '/usr/bin/zap.sh']:
+        if os.path.isfile(common_path):
+            return common_path
+    return 'zap.sh'
+
 def start_zap():
     """Start ZAP in daemon mode as background process."""
     print(f"{Fore.CYAN}🚀 Starting OWASP ZAP daemon...")
 
+    zap_bin = find_zap_executable()
     zap_cmd = [
-        '/opt/zap/zap.sh',
+        zap_bin,
         '-daemon',
         '-host', '0.0.0.0',
         '-port', '8090',
