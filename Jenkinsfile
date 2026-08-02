@@ -106,7 +106,7 @@ pipeline {
                     echo output
 
                     // Extract SCAN_ID from output
-                    def scanIdLine = output.readLines().find { it.startsWith('SCAN_ID=') }
+			    def scanIdLine = output.readLines().find { it.startsWith('SCAN_ID=') }
                     env.SCAN_ID = scanIdLine ? scanIdLine.split('=')[1] : '0'
                     echo "Scan ID: ${env.SCAN_ID}"
                 }
