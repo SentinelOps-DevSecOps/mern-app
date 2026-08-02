@@ -13,7 +13,13 @@ classifier.train();
 
 const chatBot = (req, res) => {
     const { message } = req.body;
-    const category = classifier.classify(message.toLowerCase());
+
+    if (!message || typeof message !== 'string') {
+        return res.status(400).json({ reply: 'Please provide a valid text message.' });
+    }
+
+    const sanitizedMessage = message.trim().toLowerCase().slice(0, 500);
+    const category = classifier.classify(sanitizedMessage);
 
     let reply = 'I didn’t understand that.';
 
