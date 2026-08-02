@@ -13,6 +13,8 @@
 
 pipeline {
 
+    agent any
+
     // ── Environment Variables ─────────────────────────────────────────────
     environment {
         // Your DockerHub username — change this!
