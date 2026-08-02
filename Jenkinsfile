@@ -98,7 +98,7 @@ pipeline {
                             python3 security/db_manager.py create-scan \
                                 --build ${BUILD_NUMBER} \
                                 --branch main \
-                                --commit "\$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
+                                --commit \$(git rev-parse HEAD)
                         """,
                         returnStdout: true
                     ).trim()
