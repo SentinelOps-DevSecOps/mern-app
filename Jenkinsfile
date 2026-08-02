@@ -426,7 +426,7 @@ pipeline {
             }
         }
 
- // end stages
+   }// end stages
 
     // ── Post Pipeline ─────────────────────────────────────────────────────
     // Runs after ALL stages complete
