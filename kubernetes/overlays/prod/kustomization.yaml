@@ -18,11 +18,11 @@ bases:
 images:
   - name: BACKEND_IMAGE_PLACEHOLDER
     newName: 864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend
-    newTag:  latest          # ← JENKINS UPDATES THIS VALUE
+    newTag:  build-25          # ← JENKINS UPDATES THIS VALUE
 
   - name: FRONTEND_IMAGE_PLACEHOLDER
     newName: 864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-frontend
-    newTag:  latest          # ← JENKINS UPDATES THIS VALUE
+    newTag:  build-25          # ← JENKINS UPDATES THIS VALUE
 
 # ── Production-specific patches ─────────────────────────────────
 patches:
