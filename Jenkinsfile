@@ -27,7 +27,7 @@ pipeline {
 	// ── AWS + ECR Configuration ─────────────────────────────
         AWS_REGION         = 'ap-south-1'
         AWS_ACCOUNT_ID     = '864886597339'
-        ECR_REGISTRY       = '864886597339.dkr.ecr..amazonaws.com'
+        ECR_REGISTRY       = '864886597339.dkr.ecr.ap-south-1.amazonaws.com'
         BACKEND_ECR_REPO   = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend'
         FRONTEND_ECR_REPO  = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-frontend'
 
@@ -363,65 +363,68 @@ pipeline {
             }
         }
 
-        // ── Stage 8: Push to DockerHub ────────────────────────────────────
-	# I'm changing regitry location from dockerhub to ECR
-       # stage('📤 Push to DockerHub') {
-        #    when {
-        #        expression {
-        #            currentBuild.result == null ||
-        #            currentBuild.result == 'SUCCESS'
-        #        }
-        #    }
+        // ── Stage 8: Push to DockerHub (Disabled in favor of ECR) ─────────
+        // Changing registry location from DockerHub to AWS ECR
+        /*
+        stage('📤 Push to DockerHub') {
+            when {
+                expression {
+                    currentBuild.result == null ||
+                    currentBuild.result == 'SUCCESS'
+                }
+            }
 
-        #    steps {
-        #        echo '=========================================='
-        #        echo 'Stage 8: Pushing images to DockerHub'
-        #        echo '=========================================='
+            steps {
+                echo '=========================================='
+                echo 'Stage 8: Pushing images to DockerHub'
+                echo '=========================================='
 
-        #        withCredentials([usernamePassword(
-        #            credentialsId: "${DOCKER_CREDENTIALS}",
-        #            usernameVariable: 'DOCKER_USER',
-        #            passwordVariable: 'DOCKER_PASS'
-        #        )]) {
-        #            sh '''
-        #                # Login to DockerHub
-        #                echo "${DOCKER_PASS}" | docker login \
-        #                    --username "${DOCKER_USER}" \
-        #                    --password-stdin
+                withCredentials([usernamePassword(
+                    credentialsId: "${DOCKER_CREDENTIALS}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                        # Login to DockerHub
+                        echo "${DOCKER_PASS}" | docker login \
+                            --username "${DOCKER_USER}" \
+                            --password-stdin
 
-        #                echo "✅ Logged in to DockerHub"
+                        echo "✅ Logged in to DockerHub"
 
-        #                # Push backend with build number tag
-        #                echo "--- Pushing backend ---"
-        #                docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
-        #                docker push ${BACKEND_IMAGE}:latest
-        #                echo "✅ Backend pushed: ${BACKEND_IMAGE}:${IMAGE_TAG}"
+                        # Push backend with build number tag
+                        echo "--- Pushing backend ---"
+                        docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
+                        docker push ${BACKEND_IMAGE}:latest
+                        echo "✅ Backend pushed: ${BACKEND_IMAGE}:${IMAGE_TAG}"
 
-        #                # Push frontend with build number tag
-        #                echo "--- Pushing frontend ---"
-        #                docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
-        #                docker push ${FRONTEND_IMAGE}:latest
-        #                echo "✅ Frontend pushed: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+                        # Push frontend with build number tag
+                        echo "--- Pushing frontend ---"
+                        docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                        docker push ${FRONTEND_IMAGE}:latest
+                        echo "✅ Frontend pushed: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
 
-        #                # Logout for security
-        #                docker logout
-        #                echo "✅ Logged out from DockerHub"
-        #            '''
-        #        }
-        #    }
+                        # Logout for security
+                        docker logout
+                        echo "✅ Logged out from DockerHub"
+                    '''
+                }
+            }
 
-        #    post {
-        #        success {
-        #            echo "✅ Images pushed successfully!"
-        #            echo "   Backend:  ${BACKEND_IMAGE}:${IMAGE_TAG}"
-        #            echo "   Frontend: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
-        #        }
-        #        failure {
-        #            echo '❌ Push to DockerHub FAILED'
-        #            echo '   Check DockerHub credentials in Jenkins'
-        #       }
-        #    }
-        #}
+            post {
+                success {
+                    echo "✅ Images pushed successfully!"
+                    echo "   Backend:  ${BACKEND_IMAGE}:${IMAGE_TAG}"
+                    echo "   Frontend: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+                }
+                failure {
+                    echo '❌ Push to DockerHub FAILED'
+                    echo '   Check DockerHub credentials in Jenkins'
+               }
+            }
+        }
+        */
+
 
 
 	stage('📤 Push to ECR') {
