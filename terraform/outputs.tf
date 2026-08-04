@@ -63,3 +63,19 @@ output "setup_instructions" {
     ════════════════════════════════════════════════════
   EOT
 }
+
+# ── ECR Outputs ───────────────────────────────────────────────────
+output "ecr_backend_url" {
+  description = "ECR Backend repository URL"
+  value       = aws_ecr_repository.backend.repository_url
+}
+
+output "ecr_frontend_url" {
+  description = "ECR Frontend repository URL"
+  value       = aws_ecr_repository.frontend.repository_url
+}
+
+output "ecr_registry" {
+  description = "ECR Registry (account + region)"
+  value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
+}

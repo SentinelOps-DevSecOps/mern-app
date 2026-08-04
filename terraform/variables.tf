@@ -32,3 +32,10 @@ variable "your_ip_cidr" {
   # CHANGE THIS to your actual IP + /32
   default = "0.0.0.0/0"
 }
+
+variable "eks_version" {
+  description = "Kubernetes version for EKS cluster"
+  type        = string
+  default     = "1.31"
+}
+
