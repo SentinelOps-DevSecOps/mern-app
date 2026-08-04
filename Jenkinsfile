@@ -423,42 +423,56 @@ pipeline {
 
 
 
-	stage('📤 Push to ECR') {
+        // ── Stage 8: Push to AWS ECR ──────────────────────────────────────
+        // Configured for Local Jenkins Server using Jenkins 'aws-credentials'
+        stage('📤 Push to ECR') {
             steps {
-                sh '''
-                    echo "Authenticating with ECR..."
+                withCredentials([usernamePassword(
+                    credentialsId: 'aws-credentials',
+                    usernameVariable: 'AWS_ACCESS_KEY_ID',
+                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                )]) {
+                    sh '''
+                        echo "Authenticating with AWS ECR..."
 
-                    # Get ECR login token using IAM role (no credentials needed!)
-                    # Jenkins EC2 has an IAM role with ECR permissions
-                    aws ecr get-login-password \
-                        --region ${AWS_REGION} | \
-                    docker login \
-                        --username AWS \
-                        --password-stdin \
-                        ${ECR_REGISTRY}
+                        # ECR Login using AWS CLI + Jenkins Credentials
+                        aws ecr get-login-password --region ${AWS_REGION} | \
+                        docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
-                    echo "✅ ECR authentication successful"
+                        echo "✅ ECR authentication successful"
 
-                    # Push backend
-                    echo "--- Pushing Backend ---"
-                    docker push ${BACKEND_ECR_REPO}:${IMAGE_TAG}
-                    docker push ${BACKEND_ECR_REPO}:latest
-                    echo "✅ Backend pushed to ECR"
+                        # Push backend image to ECR
+                        echo "--- Pushing Backend ---"
+                        docker push ${BACKEND_ECR_REPO}:${IMAGE_TAG}
+                        docker push ${BACKEND_ECR_REPO}:latest
+                        echo "✅ Backend pushed to ECR"
 
-                    # Push frontend
-                    echo "--- Pushing Frontend ---"
-                    docker push ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
-                    docker push ${FRONTEND_ECR_REPO}:latest
-                    echo "✅ Frontend pushed to ECR"
+                        # Push frontend image to ECR
+                        echo "--- Pushing Frontend ---"
+                        docker push ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
+                        docker push ${FRONTEND_ECR_REPO}:latest
+                        echo "✅ Frontend pushed to ECR"
 
-                    # Verify images in ECR
-                    echo "--- ECR Backend Images ---"
-                    aws ecr describe-images \
-                        --repository-name sentinelops/mern-backend \
-                        --region ${AWS_REGION} \
-                        --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \
-                        --output table 2>/dev/null || true
-                '''
+                        # Verify images in ECR
+                        echo "--- ECR Backend Images ---"
+                        aws ecr describe-images \
+                            --repository-name sentinelops/mern-backend \
+                            --region ${AWS_REGION} \
+                            --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \
+                            --output table 2>/dev/null || true
+                    '''
+                }
+
+                /*
+                // ── FUTURE CONFIGURATION FOR AWS EC2 JENKINS SERVER ─────────
+                // If moving Jenkins from local machine to an AWS EC2 instance
+                // with an attached IAM Instance Profile, you can use the IAM role:
+                //
+                // sh '''
+                //     aws ecr get-login-password --region ${AWS_REGION} | \
+                //     docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                // '''
+                */
             }
         }
 
