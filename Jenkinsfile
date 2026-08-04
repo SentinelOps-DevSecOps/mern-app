@@ -424,55 +424,49 @@ pipeline {
 
 
         // ── Stage 8: Push to AWS ECR ──────────────────────────────────────
-        // Configured for Local Jenkins Server using Jenkins 'aws-credentials'
+        // Configured for Local Jenkins Server
+        // Auto-detects local machine AWS CLI credentials (~/.aws/credentials or /home/dev/.aws/credentials)
         stage('📤 Push to ECR') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'aws-credentials',
-                    usernameVariable: 'AWS_ACCESS_KEY_ID',
-                    passwordVariable: 'AWS_SECRET_ACCESS_KEY'
-                )]) {
-                    sh '''
-                        echo "Authenticating with AWS ECR..."
+                sh '''
+                    echo "=========================================="
+                    echo "Stage 8: Authenticating and Pushing to AWS ECR"
+                    echo "=========================================="
 
-                        # ECR Login using AWS CLI + Jenkins Credentials
-                        aws ecr get-login-password --region ${AWS_REGION} | \
-                        docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                    # If AWS credentials file is not in Jenkins user HOME, locate local developer AWS credentials
+                    if [ ! -f "$HOME/.aws/credentials" ] && [ -f "/home/dev/.aws/credentials" ]; then
+                        export AWS_SHARED_CREDENTIALS_FILE="/home/dev/.aws/credentials"
+                        export AWS_CONFIG_FILE="/home/dev/.aws/config"
+                        echo "Using AWS credentials from /home/dev/.aws/credentials"
+                    fi
 
-                        echo "✅ ECR authentication successful"
+                    # Log in to ECR using local AWS CLI credentials
+                    echo "Logging in to ECR registry ${ECR_REGISTRY}..."
+                    aws ecr get-login-password --region ${AWS_REGION} | \
+                    docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
-                        # Push backend image to ECR
-                        echo "--- Pushing Backend ---"
-                        docker push ${BACKEND_ECR_REPO}:${IMAGE_TAG}
-                        docker push ${BACKEND_ECR_REPO}:latest
-                        echo "✅ Backend pushed to ECR"
+                    echo "✅ ECR authentication successful"
 
-                        # Push frontend image to ECR
-                        echo "--- Pushing Frontend ---"
-                        docker push ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
-                        docker push ${FRONTEND_ECR_REPO}:latest
-                        echo "✅ Frontend pushed to ECR"
+                    # Push backend image to ECR
+                    echo "--- Pushing Backend Image ---"
+                    docker push ${BACKEND_ECR_REPO}:${IMAGE_TAG}
+                    docker push ${BACKEND_ECR_REPO}:latest
+                    echo "✅ Backend pushed to ECR: ${BACKEND_ECR_REPO}:${IMAGE_TAG}"
 
-                        # Verify images in ECR
-                        echo "--- ECR Backend Images ---"
-                        aws ecr describe-images \
-                            --repository-name sentinelops/mern-backend \
-                            --region ${AWS_REGION} \
-                            --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \
-                            --output table 2>/dev/null || true
-                    '''
-                }
+                    # Push frontend image to ECR
+                    echo "--- Pushing Frontend Image ---"
+                    docker push ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
+                    docker push ${FRONTEND_ECR_REPO}:latest
+                    echo "✅ Frontend pushed to ECR: ${FRONTEND_ECR_REPO}:${IMAGE_TAG}"
 
-                /*
-                // ── FUTURE CONFIGURATION FOR AWS EC2 JENKINS SERVER ─────────
-                // If moving Jenkins from local machine to an AWS EC2 instance
-                // with an attached IAM Instance Profile, you can use the IAM role:
-                //
-                // sh '''
-                //     aws ecr get-login-password --region ${AWS_REGION} | \
-                //     docker login --username AWS --password-stdin ${ECR_REGISTRY}
-                // '''
-                */
+                    # Verify images in ECR
+                    echo "--- ECR Backend Images ---"
+                    aws ecr describe-images \
+                        --repository-name sentinelops/mern-backend \
+                        --region ${AWS_REGION} \
+                        --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \
+                        --output table 2>/dev/null || true
+                '''
             }
         }
 
