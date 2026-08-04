@@ -32,3 +32,11 @@ temp/
 #python virtual environment
 security/venv/
 
+# Terraform files
+.terraform/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
