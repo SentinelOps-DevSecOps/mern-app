@@ -17,21 +17,17 @@ pipeline {
 
     // ── Environment Variables ─────────────────────────────────────────────
     environment {
-        // Your DockerHub username — change this!
-        DOCKER_USERNAME       = 'abhay707'
+        // ── AWS + ECR Configuration ─────────────────────────────
+        AWS_REGION            = 'ap-south-1'
+        AWS_ACCOUNT_ID        = '864886597339'
+        ECR_REGISTRY          = '864886597339.dkr.ecr.ap-south-1.amazonaws.com'
+        BACKEND_ECR_REPO      = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend'
+        FRONTEND_ECR_REPO     = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-frontend'
 
-        // Image names on DockerHub
-        BACKEND_IMAGE         = "${DOCKER_USERNAME}/mern-backend"
-        FRONTEND_IMAGE        = "${DOCKER_USERNAME}/mern-frontend"
+        BACKEND_IMAGE         = "${BACKEND_ECR_REPO}"
+        FRONTEND_IMAGE        = "${FRONTEND_ECR_REPO}"
 
-	// ── AWS + ECR Configuration ─────────────────────────────
-        AWS_REGION         = 'ap-south-1'
-        AWS_ACCOUNT_ID     = '864886597339'
-        ECR_REGISTRY       = '864886597339.dkr.ecr.ap-south-1.amazonaws.com'
-        BACKEND_ECR_REPO   = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend'
-        FRONTEND_ECR_REPO  = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-frontend'
-
-        IMAGE_TAG             = "build-\${BUILD_NUMBER}"
+        IMAGE_TAG             = "build-${BUILD_NUMBER}"
 
         TRIVY_SEVERITY        = 'CRITICAL,HIGH'
 
@@ -434,33 +430,33 @@ pipeline {
 
                     # Get ECR login token using IAM role (no credentials needed!)
                     # Jenkins EC2 has an IAM role with ECR permissions
-                    aws ecr get-login-password \\
-                        --region \${AWS_REGION} | \\
-                    docker login \\
-                        --username AWS \\
-                        --password-stdin \\
-                        \${ECR_REGISTRY}
+                    aws ecr get-login-password \
+                        --region ${AWS_REGION} | \
+                    docker login \
+                        --username AWS \
+                        --password-stdin \
+                        ${ECR_REGISTRY}
 
                     echo "✅ ECR authentication successful"
 
                     # Push backend
                     echo "--- Pushing Backend ---"
-                    docker push \${BACKEND_ECR_REPO}:\${IMAGE_TAG}
-                    docker push \${BACKEND_ECR_REPO}:latest
+                    docker push ${BACKEND_ECR_REPO}:${IMAGE_TAG}
+                    docker push ${BACKEND_ECR_REPO}:latest
                     echo "✅ Backend pushed to ECR"
 
                     # Push frontend
                     echo "--- Pushing Frontend ---"
-                    docker push \${FRONTEND_ECR_REPO}:\${IMAGE_TAG}
-                    docker push \${FRONTEND_ECR_REPO}:latest
+                    docker push ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
+                    docker push ${FRONTEND_ECR_REPO}:latest
                     echo "✅ Frontend pushed to ECR"
 
                     # Verify images in ECR
                     echo "--- ECR Backend Images ---"
-                    aws ecr describe-images \\
-                        --repository-name mern-sentinelops/mern-backend \\
-                        --region \${AWS_REGION} \\
-                        --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \\
+                    aws ecr describe-images \
+                        --repository-name sentinelops/mern-backend \
+                        --region ${AWS_REGION} \
+                        --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \
                         --output table 2>/dev/null || true
                 '''
             }
@@ -477,12 +473,12 @@ pipeline {
                     echo "========================================"
 
                     # Configure git identity for this commit
-                    git config user.email "\${GIT_USER_EMAIL}"
-                    git config user.name  "\${GIT_USER_NAME}"
+                    git config user.email "${GIT_USER_EMAIL}"
+                    git config user.name  "${GIT_USER_NAME}"
 
                     # Update the image tag in the prod overlay kustomization
                     # This is what ArgoCD watches
-                    sed -i "s|newTag:.*# ← JENKINS UPDATES THIS VALUE|newTag:  \${IMAGE_TAG}          # ← JENKINS UPDATES THIS VALUE|g" \\
+                    sed -i "s|newTag:.*# ← JENKINS UPDATES THIS VALUE|newTag:  ${IMAGE_TAG}          # ← JENKINS UPDATES THIS VALUE|g" \
                         kubernetes/overlays/prod/kustomization.yaml
 
                     # Verify the change
@@ -497,11 +493,11 @@ pipeline {
                         git add kubernetes/overlays/prod/kustomization.yaml
 
                         # Commit with meaningful message
-                        git commit -m "ci: update image tags to \${IMAGE_TAG}
+                        git commit -m "ci: update image tags to ${IMAGE_TAG}
 
-                        Build: #\${BUILD_NUMBER}
-                        Backend:  \${BACKEND_ECR_REPO}:\${IMAGE_TAG}
-                        Frontend: \${FRONTEND_ECR_REPO}:\${IMAGE_TAG}
+                        Build: #${BUILD_NUMBER}
+                        Backend:  ${BACKEND_ECR_REPO}:${IMAGE_TAG}
+                        Frontend: ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
                         Trivy:    PASSED
                         ZAP:      PASSED
                         Score:    WITHIN THRESHOLD
