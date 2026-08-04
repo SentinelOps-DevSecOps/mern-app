@@ -1,0 +1,25 @@
+# ─────────────────────────────────────────────────────────────────
+# Kustomize Base Configuration
+# Lists all base manifests — overlays inherit + override these
+# ─────────────────────────────────────────────────────────────────
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - rbac.yaml
+  - network-policy.yaml
+  - mongodb.yaml
+  - backend.yaml
+  - frontend.yaml
+
+# Common labels added to ALL resources
+commonLabels:
+  project:    mern-devsecops
+  managed-by: argocd
+
+# Common annotations
+commonAnnotations:
+  team:        pgcp-itiss-2026
+  contact:     your-email@example.com

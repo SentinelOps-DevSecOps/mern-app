@@ -24,7 +24,14 @@ pipeline {
         BACKEND_IMAGE         = "${DOCKER_USERNAME}/mern-backend"
         FRONTEND_IMAGE        = "${DOCKER_USERNAME}/mern-frontend"
 
-        IMAGE_TAG             = "${BUILD_NUMBER}"
+	// ── AWS + ECR Configuration ─────────────────────────────
+        AWS_REGION         = 'ap-south-1'
+        AWS_ACCOUNT_ID     = '864886597339'
+        ECR_REGISTRY       = '864886597339.dkr.ecr..amazonaws.com'
+        BACKEND_ECR_REPO   = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend'
+        FRONTEND_ECR_REPO  = '864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-frontend'
+
+        IMAGE_TAG             = "build-\${BUILD_NUMBER}"
 
         TRIVY_SEVERITY        = 'CRITICAL,HIGH'
 
@@ -44,12 +51,18 @@ pipeline {
 
         // Test environment URL (where app runs for ZAP to scan)
         TEST_APP_URL          = 'http://localhost:3000'
+
+	// ── GitOps Config ───────────────────────────────────────
+        // Jenkins commits updated image tags back to GitHub
+        GIT_CREDENTIALS    = 'github-credentials'
+        GIT_USER_EMAIL     = 'rbabhay707@gmail.com'
+        GIT_USER_NAME      = 'Abhay1921'
     }
 
     // ── Pipeline Options ──────────────────────────────────────────────────
     options {
         // If pipeline runs longer than 40 minutes, abort it
-        timeout(time: 40, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')
 
         // Keep logs of last 10 builds only (saves disk space)
         buildDiscarder(logRotator(numToKeepStr: '10'))
@@ -351,65 +364,160 @@ pipeline {
         }
 
         // ── Stage 8: Push to DockerHub ────────────────────────────────────
-        stage('📤 Push to DockerHub') {
-            when {
-                expression {
-                    currentBuild.result == null ||
-                    currentBuild.result == 'SUCCESS'
-                }
-            }
+	# I'm changing regitry location from dockerhub to ECR
+       # stage('📤 Push to DockerHub') {
+        #    when {
+        #        expression {
+        #            currentBuild.result == null ||
+        #            currentBuild.result == 'SUCCESS'
+        #        }
+        #    }
 
+        #    steps {
+        #        echo '=========================================='
+        #        echo 'Stage 8: Pushing images to DockerHub'
+        #        echo '=========================================='
+
+        #        withCredentials([usernamePassword(
+        #            credentialsId: "${DOCKER_CREDENTIALS}",
+        #            usernameVariable: 'DOCKER_USER',
+        #            passwordVariable: 'DOCKER_PASS'
+        #        )]) {
+        #            sh '''
+        #                # Login to DockerHub
+        #                echo "${DOCKER_PASS}" | docker login \
+        #                    --username "${DOCKER_USER}" \
+        #                    --password-stdin
+
+        #                echo "✅ Logged in to DockerHub"
+
+        #                # Push backend with build number tag
+        #                echo "--- Pushing backend ---"
+        #                docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
+        #                docker push ${BACKEND_IMAGE}:latest
+        #                echo "✅ Backend pushed: ${BACKEND_IMAGE}:${IMAGE_TAG}"
+
+        #                # Push frontend with build number tag
+        #                echo "--- Pushing frontend ---"
+        #                docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
+        #                docker push ${FRONTEND_IMAGE}:latest
+        #                echo "✅ Frontend pushed: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+
+        #                # Logout for security
+        #                docker logout
+        #                echo "✅ Logged out from DockerHub"
+        #            '''
+        #        }
+        #    }
+
+        #    post {
+        #        success {
+        #            echo "✅ Images pushed successfully!"
+        #            echo "   Backend:  ${BACKEND_IMAGE}:${IMAGE_TAG}"
+        #            echo "   Frontend: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+        #        }
+        #        failure {
+        #            echo '❌ Push to DockerHub FAILED'
+        #            echo '   Check DockerHub credentials in Jenkins'
+        #       }
+        #    }
+        #}
+
+
+	stage('📤 Push to ECR') {
             steps {
-                echo '=========================================='
-                echo 'Stage 8: Pushing images to DockerHub'
-                echo '=========================================='
+                sh '''
+                    echo "Authenticating with ECR..."
 
-                withCredentials([usernamePassword(
-                    credentialsId: "${DOCKER_CREDENTIALS}",
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        # Login to DockerHub
-                        echo "${DOCKER_PASS}" | docker login \
-                            --username "${DOCKER_USER}" \
-                            --password-stdin
+                    # Get ECR login token using IAM role (no credentials needed!)
+                    # Jenkins EC2 has an IAM role with ECR permissions
+                    aws ecr get-login-password \\
+                        --region \${AWS_REGION} | \\
+                    docker login \\
+                        --username AWS \\
+                        --password-stdin \\
+                        \${ECR_REGISTRY}
 
-                        echo "✅ Logged in to DockerHub"
+                    echo "✅ ECR authentication successful"
 
-                        # Push backend with build number tag
-                        echo "--- Pushing backend ---"
-                        docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
-                        docker push ${BACKEND_IMAGE}:latest
-                        echo "✅ Backend pushed: ${BACKEND_IMAGE}:${IMAGE_TAG}"
+                    # Push backend
+                    echo "--- Pushing Backend ---"
+                    docker push \${BACKEND_ECR_REPO}:\${IMAGE_TAG}
+                    docker push \${BACKEND_ECR_REPO}:latest
+                    echo "✅ Backend pushed to ECR"
 
-                        # Push frontend with build number tag
-                        echo "--- Pushing frontend ---"
-                        docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
-                        docker push ${FRONTEND_IMAGE}:latest
-                        echo "✅ Frontend pushed: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
+                    # Push frontend
+                    echo "--- Pushing Frontend ---"
+                    docker push \${FRONTEND_ECR_REPO}:\${IMAGE_TAG}
+                    docker push \${FRONTEND_ECR_REPO}:latest
+                    echo "✅ Frontend pushed to ECR"
 
-                        # Logout for security
-                        docker logout
-                        echo "✅ Logged out from DockerHub"
-                    '''
-                }
-            }
-
-            post {
-                success {
-                    echo "✅ Images pushed successfully!"
-                    echo "   Backend:  ${BACKEND_IMAGE}:${IMAGE_TAG}"
-                    echo "   Frontend: ${FRONTEND_IMAGE}:${IMAGE_TAG}"
-                }
-                failure {
-                    echo '❌ Push to DockerHub FAILED'
-                    echo '   Check DockerHub credentials in Jenkins'
-                }
+                    # Verify images in ECR
+                    echo "--- ECR Backend Images ---"
+                    aws ecr describe-images \\
+                        --repository-name mern-sentinelops/mern-backend \\
+                        --region \${AWS_REGION} \\
+                        --query 'imageDetails[*].{Tag:imageTags[0],Pushed:imagePushedAt}' \\
+                        --output table 2>/dev/null || true
+                '''
             }
         }
 
-        // ── Stage 9: Update DB Record ─────────────────────────────────────
+
+	// ── Stage 9: GitOps — Update Image Tag in Manifests ─────
+        stage('🔄 GitOps — Update Manifests') {
+            steps {
+                sh '''
+                    echo "========================================"
+                    echo "GitOps: Updating image tags in Git"
+                    echo "This triggers ArgoCD to deploy!"
+                    echo "========================================"
+
+                    # Configure git identity for this commit
+                    git config user.email "\${GIT_USER_EMAIL}"
+                    git config user.name  "\${GIT_USER_NAME}"
+
+                    # Update the image tag in the prod overlay kustomization
+                    # This is what ArgoCD watches
+                    sed -i "s|newTag:.*# ← JENKINS UPDATES THIS VALUE|newTag:  \${IMAGE_TAG}          # ← JENKINS UPDATES THIS VALUE|g" \\
+                        kubernetes/overlays/prod/kustomization.yaml
+
+                    # Verify the change
+                    echo "--- Updated kustomization.yaml ---"
+                    grep "newTag" kubernetes/overlays/prod/kustomization.yaml
+
+                    # Check if there are actual changes to commit
+                    if git diff --quiet kubernetes/overlays/prod/kustomization.yaml; then
+                        echo "No manifest changes to commit"
+                    else
+                        # Stage only the manifest file
+                        git add kubernetes/overlays/prod/kustomization.yaml
+
+                        # Commit with meaningful message
+                        git commit -m "ci: update image tags to \${IMAGE_TAG}
+
+                        Build: #\${BUILD_NUMBER}
+                        Backend:  \${BACKEND_ECR_REPO}:\${IMAGE_TAG}
+                        Frontend: \${FRONTEND_ECR_REPO}:\${IMAGE_TAG}
+                        Trivy:    PASSED
+                        ZAP:      PASSED
+                        Score:    WITHIN THRESHOLD
+
+                        [skip ci]"
+
+                        # Push back to GitHub
+                        # ArgoCD will see this commit and deploy automatically
+                        git push origin main
+
+                        echo "✅ Manifests updated and pushed to GitHub"
+                        echo "   ArgoCD will now automatically deploy!"
+                    fi
+                '''
+            }
+        }
+
+
+        // ── Stage 10: Update DB Record ─────────────────────────────────────
         stage('💾 Update Scan Record') {
             steps {
                 sh '''
@@ -423,6 +531,37 @@ pipeline {
                 '''
             }
         }
+
+	 // ── Stage 12: Wait for ArgoCD Sync ───────────────────────
+        stage('⏳ Verify ArgoCD Sync') {
+            steps {
+                sh '''
+                    echo "Waiting for ArgoCD to sync and deploy..."
+                    echo "ArgoCD polls GitHub every 3 minutes by default"
+                    echo "Or you can trigger immediate sync from ArgoCD UI"
+
+                    # Wait 30 seconds then check pod status
+                    sleep 30
+
+                    echo "--- Current pod status ---"
+                    kubectl get pods -n mern-prod 2>/dev/null || true
+
+                    echo "--- Deployments ---"
+                    kubectl get deployments -n mern-prod 2>/dev/null || true
+
+                    echo "--- App URL ---"
+                    kubectl get service frontend-service \\
+                        -n mern-prod 2>/dev/null || true
+
+                    echo ""
+                    echo "✅ ArgoCD will complete deployment automatically"
+                    echo "   Monitor progress at ArgoCD dashboard"
+                '''
+            }
+        }
+
+
+
     } // end stages
 
     // ── Post Pipeline ─────────────────────────────────────────────────────
@@ -430,13 +569,16 @@ pipeline {
     post {
         success {
             echo '''
-            ╔══════════════════════════════════════════╗
-            ║  ✅  PHASE 3 PIPELINE PASSED             ║ 
-            ║  Trivy scan → CLEAN                      ║
-            ║  Risk score → WITHIN THRESHOLD           ║
-            ║  ZAP DAST   → NO HIGH FINDINGS           ║
-            ║  DockerHub  → IMAGES PUSHED              ║
-            ╚══════════════════════════════════════════╝
+            ╔══════════════════════════════════════════════════╗
+            ║  ✅  COMPLETE GITOPS PIPELINE PASSED             ║
+            ║                                                  ║
+            ║  Trivy scan    → CLEAN                           ║
+            ║  Risk score    → WITHIN THRESHOLD                ║
+            ║  ZAP DAST      → NO HIGH FINDINGS                ║
+            ║  ECR push      → IMAGES STORED                   ║
+            ║  GitOps update → MANIFESTS COMMITTED             ║
+            ║  ArgoCD        → DEPLOYING AUTOMATICALLY         ║
+            ╚══════════════════════════════════════════════════╝
             '''
         }
         failure {

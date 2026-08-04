@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────────
+# Backend Node.js Deployment + Service
+# Image tag is managed by Jenkins + ArgoCD (GitOps)
+# ─────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: mern-prod
+  labels:
+    app: backend
+    tier: api
+  annotations:
+    # ArgoCD tracks this annotation for deployment history
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge:       1
+      maxUnavailable: 0
+
+  template:
+    metadata:
+      labels:
+        app: backend
+        tier: api
+      annotations:
+        # Forces pod restart when secret changes
+        checksum/secret: "placeholder"
+    spec:
+      serviceAccountName: backend-sa
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser:    1001
+        runAsGroup:   1001
+
+      # imagePullSecrets NOT needed — EKS uses IAM role to pull from ECR
+      containers:
+        - name: backend
+          # IMAGE TAG UPDATED AUTOMATICALLY BY JENKINS PIPELINE
+          image: 864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 5000
+              name: http
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem:   true
+            capabilities:
+              drop: ["ALL"]
+
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "5000"
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongodb-uri
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu:    "100m"
+            limits:
+              memory: "256Mi"
+              cpu:    "500m"
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds:       20
+            failureThreshold:     3
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds:       10
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: mern-prod
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - port:       5000
+      targetPort: 5000
+      name:       http
+  type: ClusterIP

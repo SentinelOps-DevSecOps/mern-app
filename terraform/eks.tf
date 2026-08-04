@@ -91,7 +91,8 @@ resource "aws_security_group" "eks" {
 resource "aws_eks_cluster" "main" {
   name     = "${var.project_name}-eks"
   role_arn = aws_iam_role.eks_cluster.arn
-  version  = "1.30"
+  version  = var.eks_version
+
 
   vpc_config {
     subnet_ids = [
@@ -119,6 +120,24 @@ resource "aws_eks_cluster" "main" {
   tags = { Name = "${var.project_name}-eks" }
 }
 
+# ── EKS Access Entry for Current IAM Caller ─────────────────────────
+# Grants the local admin IAM user/role cluster access for kubectl
+resource "aws_eks_access_entry" "admin_caller" {
+  cluster_name  = aws_eks_cluster.main.name
+  principal_arn = data.aws_caller_identity.current.arn
+  type          = "STANDARD"
+}
+
+resource "aws_eks_access_policy_association" "admin_caller_policy" {
+  cluster_name  = aws_eks_cluster.main.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = data.aws_caller_identity.current.arn
+
+  access_scope {
+    type = "cluster"
+  }
+}
+
 # ── EKS Access Entry for Jenkins IAM Role ──────────────────────────
 # Grants Jenkins server cluster access so kubectl and deployment pipelines work
 resource "aws_eks_access_entry" "jenkins" {
@@ -136,6 +155,7 @@ resource "aws_eks_access_policy_association" "jenkins_admin" {
     type = "cluster"
   }
 }
+
 
 # ── EKS Node Group ─────────────────────────────────────────────────
 # These are the EC2 instances that actually run your pods

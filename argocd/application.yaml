@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────
+# ArgoCD Application Definition
+#
+# This single file tells ArgoCD everything it needs:
+# - WHERE to find manifests (GitHub repo + path)
+# - WHERE to deploy (EKS cluster + namespace)
+# - HOW to sync (automatic on change)
+# ─────────────────────────────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mern-devsecops
+  namespace: argocd
+  labels:
+    project: mern-devsecops
+    environment: production
+
+  # Finalizer ensures ArgoCD cleans up K8s resources
+  # when this Application is deleted
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+spec:
+  # Which ArgoCD project this belongs to
+  project: default
+
+  # ── Source: WHERE to get manifests ─────────────────────────────
+  source:
+    # Your GitHub repository
+    repoURL: https://github.com/Abhay1921/mern-devsecops-pipeline
+
+    # Branch to watch
+    targetRevision: main
+
+    # Path inside repo where manifests are
+    # ArgoCD watches THIS folder for changes
+    path: kubernetes/overlays/prod
+
+    # Use Kustomize to process the manifests
+    kustomize:
+      images:
+        - BACKEND_IMAGE_PLACEHOLDER
+        - FRONTEND_IMAGE_PLACEHOLDER
+
+  # ── Destination: WHERE to deploy ───────────────────────────────
+  destination:
+    # Deploy to the same cluster ArgoCD runs in
+    server: https://kubernetes.default.svc
+    namespace: mern-prod
+
+  # ── Sync Policy: HOW to deploy ─────────────────────────────────
+  syncPolicy:
+    # Automated sync — deploy whenever manifests change
+    automated:
+      # If someone manually changes K8s → ArgoCD corrects it
+      selfHeal: true
+
+      # Auto-create namespace if it doesn't exist
+      prune: true
+
+    syncOptions:
+      # Create namespace if it doesn't exist
+      - CreateNamespace=true
+      # Apply server-side (handles large resources better)
+      - ServerSideApply=true
+      # Don't fail if resource already exists
+      - Replace=false
+
+  # ── Health Checks ───────────────────────────────────────────────
+  # ArgoCD monitors these and shows health status in dashboard
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        # Ignore auto-generated fields
+        - /spec/template/metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration

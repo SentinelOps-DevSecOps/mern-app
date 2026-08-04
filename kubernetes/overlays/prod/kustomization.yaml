@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────
+# Production Overlay
+#
+# This is what ArgoCD watches.
+# Jenkins updates the 'newTag' values here on every successful build.
+# ArgoCD sees the change → deploys new version automatically.
+# ─────────────────────────────────────────────────────────────────
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Point to the base manifests
+bases:
+  - ../../base
+
+# ── IMAGE TAG MANAGEMENT ────────────────────────────────────────
+# Jenkins updates 'newTag' after every successful pipeline run
+# This is the GitOps trigger — changing this file = new deployment
+images:
+  - name: BACKEND_IMAGE_PLACEHOLDER
+    newName: 864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-backend
+    newTag:  latest          # ← JENKINS UPDATES THIS VALUE
+
+  - name: FRONTEND_IMAGE_PLACEHOLDER
+    newName: 864886597339.dkr.ecr.ap-south-1.amazonaws.com/sentinelops/mern-frontend
+    newTag:  latest          # ← JENKINS UPDATES THIS VALUE
+
+# ── Production-specific patches ─────────────────────────────────
+patches:
+  # Scale up for production
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+
+  - target:
+      kind: Deployment
+      name: frontend
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
