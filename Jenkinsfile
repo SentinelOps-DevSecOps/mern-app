@@ -474,56 +474,56 @@ pipeline {
 	// ── Stage 9: GitOps — Update Image Tag in Manifests ─────
         stage('🔄 GitOps — Update Manifests') {
             steps {
-                sh '''
-                    echo "========================================"
-                    echo "GitOps: Updating image tags in Git"
-                    echo "This triggers ArgoCD to deploy!"
-                    echo "========================================"
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-credentials',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_PASS'
+                )]) {
+                    sh '''
+                        echo "========================================"
+                        echo "GitOps: Updating image tags in Git"
+                        echo "This triggers ArgoCD to deploy!"
+                        echo "========================================"
 
-                    # Configure git identity for this commit
-                    git config user.email "${GIT_USER_EMAIL}"
-                    git config user.name  "${GIT_USER_NAME}"
+                        # Configure git identity for this commit
+                        git config user.email "${GIT_USER_EMAIL}"
+                        git config user.name  "${GIT_USER_NAME}"
 
-                    # Update the image tag in the prod overlay kustomization
-                    # This is what ArgoCD watches
-                    sed -i "s|newTag:.*# ← JENKINS UPDATES THIS VALUE|newTag:  ${IMAGE_TAG}          # ← JENKINS UPDATES THIS VALUE|g" \
-                        kubernetes/overlays/prod/kustomization.yaml
+                        # Update the image tag in the prod overlay kustomization
+                        sed -i "s|newTag:.*# ← JENKINS UPDATES THIS VALUE|newTag:  ${IMAGE_TAG}          # ← JENKINS UPDATES THIS VALUE|g" \
+                            kubernetes/overlays/prod/kustomization.yaml
 
-                    # Verify the change
-                    echo "--- Updated kustomization.yaml ---"
-                    grep "newTag" kubernetes/overlays/prod/kustomization.yaml
+                        # Verify the change
+                        echo "--- Updated kustomization.yaml ---"
+                        grep "newTag" kubernetes/overlays/prod/kustomization.yaml
 
-                    # Check if there are actual changes to commit
-                    if git diff --quiet kubernetes/overlays/prod/kustomization.yaml; then
-                        echo "No manifest changes to commit"
-                    else
-                        # Stage only the manifest file
-                        git add kubernetes/overlays/prod/kustomization.yaml
+                        if git diff --quiet kubernetes/overlays/prod/kustomization.yaml; then
+                            echo "No manifest changes to commit"
+                        else
+                            git add kubernetes/overlays/prod/kustomization.yaml
 
-                        # Commit with meaningful message
-                        git commit -m "ci: update image tags to ${IMAGE_TAG}
+                            git commit -m "ci: update image tags to ${IMAGE_TAG}
 
-                        Build: #${BUILD_NUMBER}
-                        Backend:  ${BACKEND_ECR_REPO}:${IMAGE_TAG}
-                        Frontend: ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
-                        Trivy:    PASSED
-                        ZAP:      PASSED
-                        Score:    WITHIN THRESHOLD
+                            Build: #${BUILD_NUMBER}
+                            Backend:  ${BACKEND_ECR_REPO}:${IMAGE_TAG}
+                            Frontend: ${FRONTEND_ECR_REPO}:${IMAGE_TAG}
+                            Trivy:    PASSED
+                            ZAP:      PASSED
+                            Score:    WITHIN THRESHOLD
 
-                        [skip ci]"
+                            [skip ci]"
 
-                        # Push back to GitHub (detached HEAD -> target branch)
-                        # ArgoCD will see this commit and deploy automatically
-                        TARGET_BRANCH="${GIT_BRANCH:-develop}"
-                        TARGET_BRANCH="${TARGET_BRANCH#origin/}"
+                            TARGET_BRANCH="${GIT_BRANCH:-develop}"
+                            TARGET_BRANCH="${TARGET_BRANCH#origin/}"
 
-                        echo "Pushing manifest changes to branch: ${TARGET_BRANCH}..."
-                        git push origin HEAD:${TARGET_BRANCH}
+                            echo "Pushing manifest changes to branch: ${TARGET_BRANCH}..."
+                            git push https://${GIT_USER}:${GIT_PASS}@github.com/SentinelOps-DevSecOps/mern-app.git HEAD:${TARGET_BRANCH}
 
-                        echo "✅ Manifests updated and pushed to GitHub (${TARGET_BRANCH})"
-                        echo "   ArgoCD will now automatically deploy!"
-                    fi
-                '''
+                            echo "✅ Manifests updated and pushed to GitHub (${TARGET_BRANCH})"
+                            echo "   ArgoCD will now automatically deploy!"
+                        fi
+                    '''
+                }
             }
         }
 
