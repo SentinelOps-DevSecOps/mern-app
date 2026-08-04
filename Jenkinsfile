@@ -112,7 +112,7 @@ pipeline {
                             fi
                             python3 security/db_manager.py create-scan \
                                 --build ${BUILD_NUMBER} \
-                                --branch main \
+                                --branch "\$(git branch --show-current 2>/dev/null || echo 'develop')" \
                                 --commit "\$(git rev-parse HEAD 2>/dev/null || echo 'unknown')"
                         """,
                         returnStdout: true
@@ -512,11 +512,15 @@ pipeline {
 
                         [skip ci]"
 
-                        # Push back to GitHub
+                        # Push back to GitHub (detached HEAD -> target branch)
                         # ArgoCD will see this commit and deploy automatically
-                        git push origin main
+                        TARGET_BRANCH="${GIT_BRANCH:-develop}"
+                        TARGET_BRANCH="${TARGET_BRANCH#origin/}"
 
-                        echo "✅ Manifests updated and pushed to GitHub"
+                        echo "Pushing manifest changes to branch: ${TARGET_BRANCH}..."
+                        git push origin HEAD:${TARGET_BRANCH}
+
+                        echo "✅ Manifests updated and pushed to GitHub (${TARGET_BRANCH})"
                         echo "   ArgoCD will now automatically deploy!"
                     fi
                 '''
